@@ -14,29 +14,12 @@ import matplotlib.patheffects as pe
 from adjustText import adjust_text
 import seaborn as sns
 from matplotlib.ticker import EngFormatter
-from skillcornerviz.utils.constants import BASE_COLOR, PRIMARY_HIGHLIGHT_COLOR, SECONDARY_HIGHLIGHT_COLOR
-from skillcornerviz.utils.constants import TEXT_COLOR
-from pkg_resources import resource_filename
-from matplotlib import font_manager as fm
-
-fonts = ['resources/Roboto/Roboto-Black.ttf',
-         'resources/Roboto/Roboto-BlackItalic.ttf',
-         'resources/Roboto/Roboto-Bold.ttf',
-         'resources/Roboto/Roboto-BoldItalic.ttf',
-         'resources/Roboto/Roboto-Italic.ttf',
-         'resources/Roboto/Roboto-Light.ttf',
-         'resources/Roboto/Roboto-LightItalic.ttf',
-         'resources/Roboto/Roboto-Medium.ttf',
-         'resources/Roboto/Roboto-MediumItalic.ttf',
-         'resources/Roboto/Roboto-Regular.ttf',
-         'resources/Roboto/Roboto-Thin.ttf',
-         'resources/Roboto/Roboto-ThinItalic.ttf']
-
-for f in fonts:
-    filepath = resource_filename('skillcornerviz', f)
-    fm.fontManager.addfont(filepath)
-plt.rcParams["font.family"] = "Roboto"
-
+from skillcornerviz.utils.constants import (
+    BASE_COLOR, PRIMARY_HIGHLIGHT_COLOR, SECONDARY_HIGHLIGHT_COLOR,
+    DARK_BASE_COLOR, DARK_PRIMARY_HIGHLIGHT_COLOR, DARK_SECONDARY_HIGHLIGHT_COLOR,
+    TEXT_COLOR,
+)
+from skillcornerviz.utils._fonts import load_shentox_fonts
 
 def plot_swarm_violin(df,
                       x_metric,
@@ -56,7 +39,8 @@ def plot_swarm_violin(df,
                       base_colour=BASE_COLOR,
                       primary_highlight_color=PRIMARY_HIGHLIGHT_COLOR,
                       secondary_highlight_color=SECONDARY_HIGHLIGHT_COLOR,
-                      figsize=(8, 4)):
+                      figsize=(8, 4),
+                      dark_mode=False):
     """
     Plots a swarm/violin plot.
 
@@ -77,9 +61,9 @@ def plot_swarm_violin(df,
     x_unit : str, optional
         If we want to add a unit to the axis values. For example % or km/h.
     secondary_highlight_group : list, optional
-        A group of players to label & highlight in SkillCorner yellow.
+        A group of players to label & highlight in secondary color.
     primary_highlight_group : list, optional
-        A group of players to label & highlight in SkillCorner red.
+        A group of players to label & highlight in primary color.
     data_point_id : str, optional
         The column in df that represents the unique identifier for each data point.
     data_point_label : str, optional
@@ -92,6 +76,8 @@ def plot_swarm_violin(df,
         The highlight color for the secondary highlight group.
     figsize : tuple, optional
         The size of the figure (width, height).
+    dark_mode : bool, optional
+        Enables dark mode styling. (default: False)
 
     Returns:
     --------
@@ -101,7 +87,8 @@ def plot_swarm_violin(df,
         The axes of the generated plot.
     """
 
-    # Adding values to parameters that were not given a value
+    load_shentox_fonts()
+    plt.rcParams['font.family'] = 'Shentox'
     if y_groups is None:
         y_groups = list(df[y_metric].unique())
 
@@ -117,15 +104,27 @@ def plot_swarm_violin(df,
     if secondary_highlight_group is None:
         secondary_highlight_group = []
 
-    # Removing unseemly categories in the y_value column.
+    if dark_mode:
+        background_color = TEXT_COLOR
+        text_color = 'white'
+        label_stroke = 'black'
+        if base_colour == BASE_COLOR:
+            base_colour = DARK_BASE_COLOR
+        if primary_highlight_color == PRIMARY_HIGHLIGHT_COLOR:
+            primary_highlight_color = DARK_PRIMARY_HIGHLIGHT_COLOR
+        if secondary_highlight_color == SECONDARY_HIGHLIGHT_COLOR:
+            secondary_highlight_color = DARK_SECONDARY_HIGHLIGHT_COLOR
+    else:
+        background_color = 'white'
+        text_color = TEXT_COLOR
+        label_stroke = 'white'
+
     plot_data = df[df[y_metric].isin(y_groups)]
 
-    # Setting size & face colors.
     fig, ax = plt.subplots(figsize=figsize)
-    fig.patch.set_facecolor('white')
-    ax.set_facecolor('white')
+    fig.patch.set_facecolor(background_color)
+    ax.set_facecolor(background_color)
 
-    # Plotting violins.
     violin_parts = sns.violinplot(data=plot_data,
                                   x=x_metric,
                                   y=y_metric,
@@ -134,14 +133,12 @@ def plot_swarm_violin(df,
                                   width=1,
                                   zorder=5)
 
-    # Setting the style for each violin.
     for pc in violin_parts.collections:
-        pc.set_facecolor(TEXT_COLOR)
-        pc.set_edgecolor(TEXT_COLOR)
+        pc.set_facecolor(text_color)
+        pc.set_edgecolor(text_color)
         pc.set_linewidth(0.5)
         pc.set_alpha(0.075)
 
-    # Setting swarm groups: background_players, comparison_players, target_player.
     plot_data = plot_data.assign(swarm_group='background_group')
     plot_data = plot_data.assign(colour=base_colour)
 
@@ -156,7 +153,6 @@ def plot_swarm_violin(df,
 
     plot_data = plot_data.sort_values(by=data_point_id)
 
-    # Plotting swarm plot.
     sns.swarmplot(data=plot_data,
                   x=x_metric,
                   y=y_metric,
@@ -164,10 +160,9 @@ def plot_swarm_violin(df,
                   color=base_colour,
                   alpha=1,
                   size=point_size - (len(y_groups)),
-                  edgecolor=TEXT_COLOR,
+                  edgecolor=text_color,
                   linewidth=0.1)
 
-    # Plotting swarm plot for highlight data points (larger scatter size).
     if len(primary_highlight_group) > 0 or len(secondary_highlight_group) > 0:
         swarmplots = sns.swarmplot(data=plot_data[plot_data['swarm_group'] != 'background_group'],
                                    x=x_metric,
@@ -177,41 +172,35 @@ def plot_swarm_violin(df,
                                    hue='swarm_group',
                                    alpha=1,
                                    size=highlight_point_size - (len(y_groups)),
-                                   edgecolor=TEXT_COLOR,
+                                   edgecolor=text_color,
                                    linewidth=0.3,
                                    zorder=4)
 
-        # Plotting player names for those specified in target or comparison players.
-        # Get the positions of the swarm plot on the axis.
         artists = ax.get_children()
         swarmplot_positions = list(range(len(y_groups) * 2, len(y_groups) * 3))
 
         for i, group in zip(swarmplot_positions, y_groups):
-            # Get the data for specific swarm plot.
             group_df = plot_data[plot_data[y_metric] == group].sort_values(by=x_metric, ascending=True).reset_index()
             label_df = group_df[group_df['swarm_group'] != 'background_group'].reset_index()
 
-            # Match the data points to their jitter y position in the swarm plot.
             offsets = swarmplots.collections[i].get_offsets()
 
             if len(label_df) == len(offsets):
                 label_df.loc[:, 'plotted_metric'] = [tup[0] for tup in offsets]
                 label_df.loc[:, 'y'] = [tup[1] for tup in offsets]
 
-                # Add texts for target & comparison players.
                 texts = [ax.text(label_df[x_metric].iloc[i],
                                  label_df['y'].iloc[i],
                                  str(label_df[data_point_label].iloc[i]),
-                                 color=TEXT_COLOR,
+                                 color=text_color,
                                  fontsize=fontsize,
                                  fontweight='bold',
                                  zorder=6,
                                  path_effects=[pe.withStroke(linewidth=1,
-                                                             foreground='white',
+                                                             foreground=label_stroke,
                                                              alpha=1)]
                                  ) for i in range(len(label_df))]
 
-                # Plot texts using adjust_text - only adjust spacing in y-axis.
                 adjust_text(texts,
                             ax=ax,
                             add_objects=[artists[i]],
@@ -224,58 +213,39 @@ def plot_swarm_violin(df,
                             only_move=dict(points='y', text='y', objects='y'),
                             autoalign='y',
                             arrowprops=dict(arrowstyle="-",
-                                            color=TEXT_COLOR,
+                                            color=text_color,
                                             alpha=1,
                                             lw=.5, zorder=2))
 
-    # Adding x-axis label.
-    ax.set_xlabel(x_label,
-                  fontweight='bold',
-                  fontsize=label_fontsize)
+    ax.set_xlabel(x_label, fontweight='bold', fontsize=label_fontsize, color=text_color)
+    ax.set_ylabel('', color=text_color)
 
-    # Removing y-axis labels
-    ax.set_ylabel('')
+    ax.tick_params(axis='x', colors=text_color, labelsize=label_fontsize)
+    ax.tick_params(axis='y', colors=text_color, labelsize=label_fontsize)
 
-    # Setting tick params.
-    ax.tick_params(axis='x',
-                   colors=TEXT_COLOR,
-                   labelsize=label_fontsize)
+    ax.set_yticklabels(y_group_labels, fontweight='bold', color=text_color)
 
-    ax.tick_params(axis='y',
-                   colors=TEXT_COLOR,
-                   labelsize=label_fontsize)
-
-    # Adding y_labels for each categorical group.
-    ax.set_yticklabels(y_group_labels,
-                       fontweight='bold')
-
-    # Setting x-axis value unit if specified.
     if x_unit is not None:
         formatter0 = EngFormatter(unit=x_unit)
         ax.xaxis.set_major_formatter(formatter0)
 
-    # Setting plot spines to TEXT_COLOR or none.
     ax.spines['top'].set_color('none')
     ax.spines['right'].set_color('none')
-    ax.spines['bottom'].set_color(TEXT_COLOR)
+    ax.spines['bottom'].set_color(text_color)
     ax.yaxis.set_ticks_position('none')
     ax.spines['left'].set_color('None')
 
-    # Limiting x-axis if the value is a percentage.
     xmin, xmax = ax.get_xlim()
     if x_unit == '%' and xmax > 110:
-        xmin, xmax = ax.get_xlim()
         ax.set_xlim([xmin, 110])
 
-    # Add grid.
-    ax.grid(color=TEXT_COLOR,
+    ax.grid(color=text_color,
             axis='both',
             linestyle='--',
             linewidth=0.5,
             alpha=0.25,
             zorder=1)
 
-    # Remove legend.
     ax.legend().remove()
 
     plt.tight_layout()

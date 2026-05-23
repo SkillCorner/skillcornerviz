@@ -17,30 +17,10 @@ from skillcornerviz.utils.constants import BASE_COLOR, PRIMARY_HIGHLIGHT_COLOR, 
     DARK_BASE_COLOR
 from skillcornerviz.utils.constants import TEXT_COLOR, DARK_PRIMARY_HIGHLIGHT_COLOR, \
     DARK_SECONDARY_HIGHLIGHT_COLOR
-from skillcornerviz.standard_plots.formating import standard_ax_formating
-from pkg_resources import resource_filename
-from matplotlib import font_manager as fm
+from skillcornerviz.standard_plots.formatting import standard_ax_formating
+from skillcornerviz.utils._fonts import load_shentox_fonts
 from skillcornerviz.utils.constants import AVERAGE_STRINGS
 from skillcornerviz.utils import skillcorner_utils
-
-fonts = ['resources/Roboto/Roboto-Black.ttf',
-         'resources/Roboto/Roboto-BlackItalic.ttf',
-         'resources/Roboto/Roboto-Bold.ttf',
-         'resources/Roboto/Roboto-BoldItalic.ttf',
-         'resources/Roboto/Roboto-Italic.ttf',
-         'resources/Roboto/Roboto-Light.ttf',
-         'resources/Roboto/Roboto-LightItalic.ttf',
-         'resources/Roboto/Roboto-Medium.ttf',
-         'resources/Roboto/Roboto-MediumItalic.ttf',
-         'resources/Roboto/Roboto-Regular.ttf',
-         'resources/Roboto/Roboto-Thin.ttf',
-         'resources/Roboto/Roboto-ThinItalic.ttf']
-
-for f in fonts:
-    filepath = resource_filename('skillcornerviz', f)
-    fm.fontManager.addfont(filepath)
-plt.rcParams["font.family"] = "Roboto"
-
 
 def plot_scatter(df,
                  x_metric, y_metric, z_metric=None, x_label=None, y_label=None, z_label=None,
@@ -98,7 +78,8 @@ def plot_scatter(df,
         fig, ax: The Matplotlib figure and axis objects.
 
     """
-    # Assigning values if some parameters are not given a value in the function call
+    load_shentox_fonts()
+    plt.rcParams['font.family'] = 'Shentox'
     if x_label is None:
         x_label = x_metric
 
@@ -117,12 +98,10 @@ def plot_scatter(df,
         secondary_highlight_color = DARK_SECONDARY_HIGHLIGHT_COLOR
         text_color = 'white'
 
-    # Setting plot size & background.
     fig, ax = plt.subplots(figsize=figsize)
     fig.patch.set_facecolor(facecolor)
     ax.set_facecolor(facecolor)
 
-    # Calculating and setting size values based on z-axis values.
     if z_metric == 'sum_minutes_played':
         sum_minutes_played = (df['minutes_played_per_match'] * df['count_match']) / 10
         df = df.assign(sum_minutes_played=sum_minutes_played)
@@ -143,7 +122,6 @@ def plot_scatter(df,
     if z_metric is not None and z_label is None:
         z_label = z_metric
 
-    # Filtering data points based on standard deviation factors.
     label_group = []
     if x_sd_highlight is not None:
         label_group.append(df[(df[x_metric] > df[x_metric].mean() + (x_sd_highlight * df[x_metric].std()))])
@@ -159,18 +137,16 @@ def plot_scatter(df,
 
     label_group = pd.concat(label_group, ignore_index=True).drop_duplicates()
 
-    # Set style parameters for label_group.
     label_group = label_group.assign(colour=BASE_COLOR)
     label_group.loc[label_group[data_point_id].isin(secondary_highlight_group), 'colour'] = secondary_highlight_color
     label_group.loc[label_group[data_point_id].isin(primary_highlight_group), 'colour'] = primary_highlight_color
-    if len(primary_highlight_group) == 0 & len(secondary_highlight_group) == 0:
+    if len(primary_highlight_group) == 0 and len(secondary_highlight_group) == 0:
         label_group = label_group.assign(colour=primary_highlight_color)
 
     label_group = label_group.assign(fontweight='bold')
     label_group.loc[label_group[data_point_id].isin(secondary_highlight_group), 'fontweight'] = 'bold'
     label_group.loc[label_group[data_point_id].isin(primary_highlight_group), 'fontweight'] = 'bold'
 
-    # Plotting scatters. Note the default size reflects the total minutes played.
     ax.scatter(df[x_metric],
                df[y_metric],
                c=base_color,
@@ -189,7 +165,6 @@ def plot_scatter(df,
                s=label_group['size'],
                zorder=5)
 
-    # Adding player_name texts for label group.
     if len(label_group) > 0:
         texts = [ax.text(label_group[x_metric].iloc[i],
                          label_group[y_metric].iloc[i],
@@ -203,7 +178,6 @@ def plot_scatter(df,
                                                      alpha=1)]
                          ) for i in range(len(label_group))]
 
-        # Plotting texts using adjust_text to manage spacing/overlaps.
         adjust_text(texts, ax=ax, expand_points=(1.5, 1.5),
                     force_text=.5,
                     force_points=.5,
@@ -213,8 +187,7 @@ def plot_scatter(df,
                                     alpha=1,
                                     lw=0.5, zorder=6))
 
-    # Add average lines.
-    if avg_line == True:
+    if avg_line:
         ax.axvline(df[x_metric].mean(),
                    color=text_color, alpha=0.6, lw=1, linestyle='--', zorder=3,
                    label=skillcorner_utils.split_string_with_new_line(AVERAGE_STRINGS[language]['Sample Average']))
@@ -232,9 +205,8 @@ def plot_scatter(df,
     if y_equals_x_line:
         xmin, xmax = ax.get_xlim()
         ymin, ymax = ax.get_ylim()
-        ax.axline((max([xmin, ymin]), max([xmin, ymin])), slope=1, color=SECONDARY_HIGHLIGHT_COLOR, ls='--',label="$y=x$")
+        ax.axline((max([xmin, ymin]), max([xmin, ymin])), slope=1, color=SECONDARY_HIGHLIGHT_COLOR, ls='--', label="$y=x$")
 
-    # Adding empty legend handles & labels that reflect scatter size.
     hidden_color = TEXT_COLOR if dark_mode else 'white'
     if z_metric is not None:
         ax.scatter([], [], c=hidden_color, s=5,
@@ -253,7 +225,6 @@ def plot_scatter(df,
                    lw=0.5, edgecolor='white' if dark_mode else 'black', zorder=3,
                    label='Low')
 
-    # Standard Formatting
     standard_ax_formating(ax=ax,
                           x_label=x_label,
                           y_label=y_label,
@@ -262,8 +233,6 @@ def plot_scatter(df,
                           show_left_spine=show_left_spine,
                           dark_mode=dark_mode)
 
-    # Adding annotation to plot corners.
-    # Extending the plot limits to avoid annotating over player scatters.
     if (x_annotation is not None and y_annotation is not None) or (custom_annotation is not None):
         xmin, xmax = ax.get_xlim()
         ymin, ymax = ax.get_ylim()
@@ -277,8 +246,7 @@ def plot_scatter(df,
         ymin, ymax = ax.get_ylim()
 
         if custom_annotation is not None:
-            # This makes sure to keep a space in the text
-            custom_annotation = [i.replace(' ', "\ ") for i in custom_annotation]
+            custom_annotation = [i.replace(' ', r"\ ") for i in custom_annotation]
             bot_left_text = r"$\bf{" + custom_annotation[0] + r"}$"
             top_left_text = r"$\bf{" + custom_annotation[1] + r"}$"
             top_right_text = r"$\bf{" + custom_annotation[2] + r"}$"
@@ -289,53 +257,37 @@ def plot_scatter(df,
             top_right_text = r"$\bf{High}$ " + y_annotation + '\n' + r"$\bf{High}$ " + x_annotation
             bot_right_text = r"$\bf{Low}$ " + y_annotation + '\n' + r"$\bf{High}$ " + x_annotation
 
-        # Bottom left.
         ax.text(xmin, ymin,
                 bot_left_text,
-                ha='left',
-                va='bottom',
-                color=text_color,
-                fontsize=annotation_fontsize,
-                fontweight='regular',
+                ha='left', va='bottom',
+                color=text_color, fontsize=annotation_fontsize, fontweight='regular',
                 path_effects=[pe.withStroke(linewidth=1.5,
                                             foreground=TEXT_COLOR if dark_mode else 'white',
                                             alpha=1)])
-        # Top left.
         ax.text(xmin, ymax,
                 top_left_text,
-                ha='left',
-                va='top',
-                color=text_color,
-                fontsize=annotation_fontsize,
-                fontweight='regular',
+                ha='left', va='top',
+                color=text_color, fontsize=annotation_fontsize, fontweight='regular',
                 path_effects=[pe.withStroke(linewidth=1.5,
                                             foreground=TEXT_COLOR if dark_mode else 'white',
                                             alpha=1)])
-        # Bottom right.
         ax.text(xmax, ymin,
                 bot_right_text,
-                ha='right',
-                va='bottom',
-                color=text_color,
-                fontsize=annotation_fontsize,
-                fontweight='regular',
+                ha='right', va='bottom',
+                color=text_color, fontsize=annotation_fontsize, fontweight='regular',
                 path_effects=[pe.withStroke(linewidth=1.5,
                                             foreground=TEXT_COLOR if dark_mode else 'white',
                                             alpha=1)])
-        # Top right.
         ax.text(xmax, ymax,
                 top_right_text,
-                ha='right',
-                va='top',
-                color=text_color,
-                fontsize=annotation_fontsize,
+                ha='right', va='top',
+                color=text_color, fontsize=annotation_fontsize,
                 path_effects=[pe.withStroke(linewidth=1.5,
                                             foreground=TEXT_COLOR if dark_mode else 'white',
                                             alpha=1)])
 
-    ax.grid(axis='both', color=text_color, alpha=0.2, lw=.5, linestyle='--', )
+    ax.grid(axis='both', color=text_color, alpha=0.2, lw=.5, linestyle='--')
 
-    # Add Title
     if plot_title is not None:
         ax.set_title(plot_title, weight='bold', color=text_color, pad=15)
 

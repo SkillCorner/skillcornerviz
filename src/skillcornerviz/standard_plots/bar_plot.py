@@ -16,28 +16,8 @@ import pandas as pd
 from skillcornerviz.utils.constants import BASE_COLOR, PRIMARY_HIGHLIGHT_COLOR, SECONDARY_HIGHLIGHT_COLOR, \
     DARK_PRIMARY_HIGHLIGHT_COLOR, DARK_SECONDARY_HIGHLIGHT_COLOR, DARK_BASE_COLOR
 from skillcornerviz.utils.constants import TEXT_COLOR
-from pkg_resources import resource_filename
-from matplotlib import font_manager as fm
+from skillcornerviz.utils._fonts import load_shentox_fonts
 import matplotlib.patheffects as pe
-
-fonts = ['resources/Roboto/Roboto-Black.ttf',
-         'resources/Roboto/Roboto-BlackItalic.ttf',
-         'resources/Roboto/Roboto-Bold.ttf',
-         'resources/Roboto/Roboto-BoldItalic.ttf',
-         'resources/Roboto/Roboto-Italic.ttf',
-         'resources/Roboto/Roboto-Light.ttf',
-         'resources/Roboto/Roboto-LightItalic.ttf',
-         'resources/Roboto/Roboto-Medium.ttf',
-         'resources/Roboto/Roboto-MediumItalic.ttf',
-         'resources/Roboto/Roboto-Regular.ttf',
-         'resources/Roboto/Roboto-Thin.ttf',
-         'resources/Roboto/Roboto-ThinItalic.ttf']
-
-for f in fonts:
-    filepath = resource_filename('skillcornerviz', f)
-    fm.fontManager.addfont(filepath)
-plt.rcParams["font.family"] = "Roboto"
-
 
 def plot_bar_chart(df,
                    metric,
@@ -100,6 +80,8 @@ def plot_bar_chart(df,
         Rotates the labels if vertical=True is used. (default: 90)
     fontsize: int, optional
         Sets the fontsize used for texts.
+    dark_mode: bool, optional
+        Enables dark mode styling. (default: False)
 
     Returns
     -------
@@ -109,11 +91,10 @@ def plot_bar_chart(df,
         The generated axes.
 
     """
-    # Error Handling
-
+    load_shentox_fonts()
+    plt.rcParams['font.family'] = 'Shentox'
     if metric not in df.columns:
         raise ValueError("The metric you have entered is not in the DataFrame")
-
 
     if dark_mode:
         background_color = TEXT_COLOR
@@ -129,18 +110,15 @@ def plot_bar_chart(df,
     if label is None:
         label = unit
 
-    # Setting the font to our SkillCorner font.
     if primary_highlight_group is None:
         primary_highlight_group = []
     if secondary_highlight_group is None:
         secondary_highlight_group = []
 
-    # Setting plot size & background.
     fig, ax = plt.subplots(figsize=figsize)
     fig.patch.set_facecolor(background_color)
     ax.set_facecolor(background_color)
 
-    # Sorting the dataframe based on the metric to plot.
     if order is None:
         if not vertical:
             df = df.sort_values(by=metric)
@@ -151,7 +129,6 @@ def plot_bar_chart(df,
         df = df.sort_values(data_point_id)
     y_pos = range(0, len(df))
 
-    # Plotting bars.
     if not vertical:
         bars = ax.barh(y_pos,
                        df[metric],
@@ -159,36 +136,26 @@ def plot_bar_chart(df,
                        edgecolor=edge_color,
                        lw=0.5,
                        zorder=3,
-                       alpha=1
-                       # alpha=0.1 if dark_mode is True, else alpha=1
-                       )
-        # Looping through data & bars to highlight specific players.
+                       alpha=1)
         for i, bar in zip(y_pos, bars):
-            # If the player has been included in the comparison_players or target_players
             if df[data_point_id].iloc[i] in secondary_highlight_group or \
                     df[data_point_id].iloc[i] in primary_highlight_group:
                 bar.set_color(secondary_highlight_color)
                 bar.set_alpha(1)
 
-                # If the player has been included in the target_players
                 if df[data_point_id].iloc[i] in primary_highlight_group:
                     bar.set_color(primary_highlight_color)
 
-                # Apply to all bars.
                 bar.set_edgecolor(edge_color)
                 bar.set_linewidth(0.5)
 
                 if add_bar_values:
                     if unit is not None:
-                        # If a unit has been given, a string with the rounded value is created, including the unit
                         str_value = str(round(df[metric].iloc[i], 2)) + ' ' + unit + '  '
                     else:
-                        # If a unit is not given, only the rounded string is created
                         str_value = str(round(df[metric].iloc[i], 2)) + '  '
 
-                    # Adding the str_value to the plot
                     ax.text(df[metric].iloc[i], i, str_value,
-                            # Stylistic features for the plot
                             ha='right', va='center',
                             fontsize=fontsize, fontweight='bold',
                             color=background_color if dark_mode else 'white',
@@ -198,30 +165,23 @@ def plot_bar_chart(df,
             else:
                 if add_bar_values:
                     if unit is not None:
-                        # If a unit has been given, a string with the rounded value is created, including the unit
                         str_value = str(round(df[metric].iloc[i], 2)) + ' ' + unit + '  '
                     else:
-                        # If a unit is not given, only the rounded string is created
                         str_value = str(round(df[metric].iloc[i], 2)) + '  '
 
-                    # Adding the str_value to the plot
                     ax.text(df[metric].iloc[i], i, str_value,
-                            # Stylistic features for the plot
                             ha='right', va='center',
                             fontsize=fontsize, fontweight='bold',
                             color=text_color,
                             path_effects=[pe.withStroke(linewidth=.75,
-                                                        foreground=background_color if dark_mode else 'white',
+                                                        foreground=background_color,
                                                         alpha=1)])
 
-        # Setting plot elements to #0C1B37.
         ax.spines['left'].set_color(text_color)
         ax.spines['bottom'].set_color(None)
-        # Setting y ticks to player names.
         ax.set_yticks(y_pos)
         ax.set_yticklabels(df[data_point_label])
 
-        # Setting player names for those in comparison or target groups to bold.
         for i, tick_label in enumerate(ax.get_yticklabels()):
             if df[data_point_id].iloc[i] in secondary_highlight_group or \
                     df[data_point_id].iloc[i] in primary_highlight_group:
@@ -229,39 +189,32 @@ def plot_bar_chart(df,
             else:
                 tick_label.set_fontproperties({'size': fontsize})
 
-        # If a unit has been specified, apply it to the x-axis.
         if unit is not None:
             formatter0 = EngFormatter(unit=unit)
             ax.xaxis.set_major_formatter(formatter0)
-        # Setting x label.
         ax.set_xlabel(label,
                       fontweight='bold',
                       fontsize=fontsize,
                       labelpad=8)
-        # If you give a lim we set it
         if lim is not None:
             ax.set_xlim(lim)
 
     elif vertical:
         bars = ax.bar(y_pos,
                       df[metric],
-                      color=base_color,
+                      color=DARK_BASE_COLOR if dark_mode else base_color,
                       edgecolor=text_color,
                       lw=0.5,
                       zorder=3,
                       alpha=1)
-        # Looping through data & bars to highlight specific players.
         for i, bar in zip(y_pos, bars):
-            # If the player has been included in the comparison_players or target_players
             if df[data_point_id].iloc[i] in secondary_highlight_group or \
                     df[data_point_id].iloc[i] in primary_highlight_group:
                 bar.set_color(secondary_highlight_color)
 
-                # If the player has been included in the target_players
                 if df[data_point_id].iloc[i] in primary_highlight_group:
                     bar.set_color(primary_highlight_color)
 
-                # Apply to all bars.
                 bar.set_edgecolor(text_color)
                 bar.set_linewidth(0.5)
 
@@ -276,18 +229,15 @@ def plot_bar_chart(df,
                         fontsize=fontsize, fontweight='bold',
                         color=text_color,
                         path_effects=[pe.withStroke(linewidth=.75,
-                                                    foreground='white',
+                                                    foreground=background_color,
                                                     alpha=1)])
 
-        # Setting plot elements to #0C1B37.
         ax.spines['left'].set_color(None)
         ax.spines['bottom'].set_color(text_color)
 
-        # Setting y ticks to player names.
         ax.set_xticks(y_pos)
         ax.set_xticklabels(df[data_point_label], rotation=rotation)
 
-        # Setting player names for those in comparison or target groups to bold.
         for i, tick_label in enumerate(ax.get_xticklabels()):
             if df[data_point_id].iloc[i] in secondary_highlight_group or \
                     df[data_point_id].iloc[i] in primary_highlight_group:
@@ -295,23 +245,18 @@ def plot_bar_chart(df,
             else:
                 tick_label.set_fontproperties({'size': fontsize})
 
-        # If a unit has been specified, apply it to the x-axis.
         if unit is not None:
             formatter0 = EngFormatter(unit=unit)
             ax.yaxis.set_major_formatter(formatter0)
-        # Setting x label.
         ax.set_ylabel(label,
                       fontweight='bold',
                       fontsize=fontsize)
-        # If you give a lim we set it
         if lim is not None:
             ax.set_ylim(lim)
 
-    # Hiding the top & right spines.
     ax.spines['top'].set_color('none')
     ax.spines['right'].set_color('none')
 
-    # Setting axis label style params.
     ax.tick_params(axis='x',
                    colors=text_color,
                    labelsize=fontsize,
@@ -323,7 +268,6 @@ def plot_bar_chart(df,
     ax.yaxis.label.set_color(text_color)
     ax.xaxis.label.set_color(text_color)
 
-    # Add grid.
     ax.grid(color=text_color,
             axis='both',
             linestyle='--',

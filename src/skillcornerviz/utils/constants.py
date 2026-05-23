@@ -159,7 +159,7 @@ META_STRINGS = {
         'Position': 'Posição',
         'Date Of Birth': 'Data de nascimento',
         'Matches': 'Jogos',
-        'Season': 'Toemporada'},
+        'Season': 'Temporada'},
 }
 
 # Position Names
