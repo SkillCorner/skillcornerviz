@@ -70,7 +70,7 @@ fig, ax = bar.plot_bar_chart(df=df[(df['team_id'] == 262)],
                              data_point_label='plot_label')
 ```
 ### Bar Plot Figure:
-![](https://github.com/liamMichaelBailey/skillcornerviz/blob/master/example_plots/bar_plot.png?raw=true)
+![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/bar_plot.png?raw=true)
 ## <u>Scatter Plot</u>
 ### Code Snippet:
 ```python
@@ -106,7 +106,7 @@ fig, ax = scatter.plot_scatter(df=df[df['position_group'].isin(['Midfield'])],
 ```
 
 ### Scatter Plot Figure
-![](https://github.com/liamMichaelBailey/skillcornerviz/blob/master/example_plots/scatter_plot.png?raw=true)
+![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/scatter_plot.png?raw=true)
 
 ## <u>Radar Plot</u>
 ### Code Snippet
@@ -160,7 +160,7 @@ fig, ax = radar.plot_radar(df=df[df['group'] == 'Wide Attacker'],
 
 ```
 ### Radar Plot Figure
-![](https://github.com/liamMichaelBailey/skillcornerviz/blob/master/example_plots/radar_plot.png?raw=true)
+![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/radar_plot.png?raw=true)
 
 ## <u>Summary Table</u>
 ### Code Snippet
@@ -204,7 +204,7 @@ fig, ax = table.plot_summary_table(df=df[df['position_group'] == 'Midfield'],
                                             'Djibril Sow'])
 ```
 ### Summary Table Figure
-![](https://github.com/liamMichaelBailey/skillcornerviz/blob/master/example_plots/summary_table.png?raw=true)
+![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/summary_table.png?raw=true)
 
 ## <u>Swarm/Violin Plot</u>
 ### Code Snippet
@@ -242,7 +242,7 @@ fig, ax = swarm_plot.plot_swarm_violin(df=df,
                                 point_size=7)
 ```
 ### Swarm Violin Plot Figure
-![](https://github.com/liamMichaelBailey/skillcornerviz/blob/master/example_plots/swarm_violin_plot.png?raw=true)
+![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/swarm_violin_plot.png?raw=true)
 
 ----------------------------------------------------------------------------------------------------------------------------
 
