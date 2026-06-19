@@ -9,18 +9,22 @@ of insightful visualizations.
 ```python
 skillcornerviz/
 ├── resources/
-│   └── Roboto/ # Folder containing fonts
-│       └── __init__.py
+│   ├── Roboto/   # Roboto font files (.ttf)
+│   └── Shentox/  # Shentox font files (.otf)
 ├── standard_plots/
 │   ├── __init__.py
 │   ├── bar_plot.py
-│   ├── formating.py
+│   ├── formatting.py
+│   ├── narrative_ranking_plot.py
 │   ├── radar_plot.py
 │   ├── scatter_plot.py
 │   ├── summary_table.py
-│   └── swarm_violin_plot.py
+│   ├── swarm_violin_plot.py
+│   ├── table_grid.py
+│   └── zscore_dotplot.py
 ├── utils/
 │   ├── __init__.py
+│   ├── _fonts.py
 │   ├── constants.py
 │   ├── skillcorner_colors.py
 │   ├── skillcorner_game_intelligence_utils.py
@@ -243,6 +247,87 @@ fig, ax = swarm_plot.plot_swarm_violin(df=df,
 ```
 ### Swarm Violin Plot Figure
 ![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/swarm_violin_plot.png?raw=true)
+
+## <u>Narrative Ranking Plot</u>
+### Code Snippet
+```python
+from skillcornerviz.standard_plots import narrative_ranking_plot as rank
+from skillcorner.client import SkillcornerClient
+import pandas as pd
+
+client = SkillcornerClient(username='YOUR_USERNAME', password='YOUR_PASSWORD')
+
+data = client.get_in_possession_off_ball_runs(params={'competition': 4,
+                                                      'season': 28,
+                                                      'group_by': 'player,team,competition,season,group',
+                                                      'playing_time__gte': 60,
+                                                      'count_match__gte': 8,
+                                                      'average_per': '30_min_tip',
+                                                      'run_type': 'all,run_in_behind,run_ahead_of_the_ball,'
+                                                                 'support_run,pulling_wide_run,coming_short_run,'
+                                                                 'underlap_run,overlap_run,dropping_off_run,'
+                                                                 'pulling_half_space_run,cross_receiver_run'})
+df = pd.DataFrame(data)
+
+QUESTIONS = {
+    'Off-Ball Runs': [
+        'count_runs_in_behind_per_30_min_tip',
+        'count_runs_ahead_of_the_ball_per_30_min_tip',
+        'count_overlap_runs_per_30_min_tip',
+        'count_underlap_runs_per_30_min_tip',
+        'count_support_runs_per_30_min_tip',
+        'count_coming_short_runs_per_30_min_tip',
+    ]
+}
+
+fig, ax = rank.plot_ranking(
+    df=df[df['group'] == 'Wide Attacker'],
+    questions=QUESTIONS,
+    highlight_group=[35342, 9106, 7619],
+    data_point_id='player_id',
+    data_point_label='short_name',
+    plot_title='Off-Ball Run Rankings | Wide Attackers LaLiga 2023/24',
+)
+```
+
+## <u>Table Grid</u>
+### Code Snippet
+```python
+from skillcornerviz.standard_plots import table_grid as tgrid
+from skillcornerviz.utils import skillcorner_physical_utils as p_utils
+from skillcornerviz.utils import skillcorner_utils as skcu
+from skillcorner.client import SkillcornerClient
+import pandas as pd
+from scipy import stats
+
+client = SkillcornerClient(username='YOUR_USERNAME', password='YOUR_PASSWORD')
+
+data = client.get_physical(params={'competition': 4,
+                                   'season': 28,
+                                   'group_by': 'player,team,competition,season,group',
+                                   'possession': 'all,tip,otip',
+                                   'playing_time__gte': 60,
+                                   'count_match__gte': 8,
+                                   'data_version': '3'})
+df = pd.DataFrame(data)
+p_utils.add_standard_metrics(df)
+
+METRICS = ['total_distance_per_90', 'hi_distance_per_90', 'sprint_count_per_90', 'psv99']
+LABELS  = ['Total Dist P90', 'HI Dist P90', 'Sprints P90', 'PSV99']
+
+# Z-score each metric across the sample
+for m in METRICS:
+    df[f'{m}_z'] = stats.zscore(df[m].fillna(0))
+
+fig, ax = tgrid.plot_table_grid(
+    df=df[df['group'] == 'Midfield'],
+    metrics=[f'{m}_z' for m in METRICS],
+    labels=LABELS,
+    row_id_col='player_short_name',
+    sort_by='total_distance_per_90_z',
+    plot_title='Physical Profile | Midfielders LaLiga 2023/24',
+)
+```
 
 ----------------------------------------------------------------------------------------------------------------------------
 
