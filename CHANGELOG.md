@@ -5,6 +5,16 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.1] – 2026-06-19
+
+### Changed
+- `table_grid`: renamed `row_id_col` → `data_point_id` for API consistency with other plot functions.
+
+### Added
+- `table_grid`: new `highlight_group` parameter to filter displayed rows to a shortlist of `data_point_id` values.
+
+---
+
 ## [1.2.0] – 2026-04-24
 
 ### Added
