@@ -325,7 +325,7 @@ fig, ax = tgrid.plot_table_grid(
     df=df[df['group'] == 'Midfield'],
     metrics=[f'{m}_z' for m in METRICS],
     labels=LABELS,
-    row_id_col='player_id',
+    data_point_id='player_id',
     sort_by='total_distance_per_90_z',
     plot_title='Physical Profile | Midfielders LaLiga 2023/24',
 )

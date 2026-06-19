@@ -35,7 +35,7 @@ _CBAR_LABELS = [
 def plot_table_grid(df: pd.DataFrame,
                     metrics: list,
                     labels: list,
-                    row_id_col: str,
+                    data_point_id: str,
                     sort_by: str | None = None,
                     sort_ascending: bool = False,
                     gap_positions: list | None = None,
@@ -48,14 +48,14 @@ def plot_table_grid(df: pd.DataFrame,
     Parameters
     ----------
     df : DataFrame
-        Must contain `row_id_col`, optional `sort_by`, and all columns in `metrics`.
+        Must contain `data_point_id`, optional `sort_by`, and all columns in `metrics`.
         Values are expected to be z-scores (or any normalised metric); they are
         clipped to ±2.5 for display purposes.
     metrics : list
         Column names to display as heatmap columns.
     labels : list
         Display labels corresponding to `metrics`. Must be the same length.
-    row_id_col : str
+    data_point_id : str
         Column used as row labels (e.g. 'team_shortname', 'player_name').
     sort_by : str, optional
         Column to sort rows by before plotting. Rows are unsorted if None.
@@ -81,12 +81,12 @@ def plot_table_grid(df: pd.DataFrame,
     if gap_positions is None:
         gap_positions = []
 
-    plot_df = df[[row_id_col] + metrics].copy()
+    plot_df = df[[data_point_id] + metrics].copy()
 
     if sort_by is not None and sort_by in df.columns:
         plot_df = plot_df.assign(_sort=df[sort_by]).sort_values('_sort', ascending=sort_ascending).drop(columns='_sort')
 
-    plot_df = plot_df.set_index(row_id_col)[metrics]
+    plot_df = plot_df.set_index(data_point_id)[metrics]
     display_labels = list(labels)
 
     # Clip to ±2.5 for colour scale
