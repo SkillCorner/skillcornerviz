@@ -344,6 +344,8 @@ fig, ax = tgrid.plot_table_grid(
 )
 fig.savefig('table_grid_example.png', format='png', dpi=300)
 ```
+### Table Grid Figure
+![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/table_grid.png?raw=true)
 
 ----------------------------------------------------------------------------------------------------------------------------
 
