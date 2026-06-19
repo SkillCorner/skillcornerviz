@@ -185,6 +185,7 @@ class TableGrid(unittest.TestCase):
             metrics=['distance_z', 'sprint_z', 'press_z'],
             labels=['Distance', 'Sprint', 'Press'],
             data_point_id='team',
+            highlight_group=['Team0', 'Team1', 'Team2'],
             sort_by='points',
         )
         self.assertIsInstance(fig, Figure)

@@ -321,11 +321,14 @@ LABELS  = ['Total Dist P90', 'HI Dist P90', 'Sprints P90', 'PSV99']
 for m in METRICS:
     df[f'{m}_z'] = stats.zscore(df[m])
 
+midfielders = [4450, 9188, 25738, 118870, 24120, 13908]
+
 fig, ax = tgrid.plot_table_grid(
     df=df[df['group'] == 'Midfield'],
     metrics=[f'{m}_z' for m in METRICS],
     labels=LABELS,
     data_point_id='player_id',
+    highlight_group=midfielders,
     sort_by='total_distance_per_90_z',
     plot_title='Physical Profile | Midfielders LaLiga 2023/24',
 )

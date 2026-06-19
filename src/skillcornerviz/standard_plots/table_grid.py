@@ -36,6 +36,7 @@ def plot_table_grid(df: pd.DataFrame,
                     metrics: list,
                     labels: list,
                     data_point_id: str,
+                    highlight_group: list | None = None,
                     sort_by: str | None = None,
                     sort_ascending: bool = False,
                     gap_positions: list | None = None,
@@ -57,6 +58,8 @@ def plot_table_grid(df: pd.DataFrame,
         Display labels corresponding to `metrics`. Must be the same length.
     data_point_id : str
         Column used as row labels (e.g. 'team_shortname', 'player_name').
+    highlight_group : list, optional
+        If provided, only rows whose `data_point_id` value is in this list are displayed.
     sort_by : str, optional
         Column to sort rows by before plotting. Rows are unsorted if None.
     sort_ascending : bool
@@ -82,6 +85,9 @@ def plot_table_grid(df: pd.DataFrame,
         gap_positions = []
 
     plot_df = df[[data_point_id] + metrics].copy()
+
+    if highlight_group is not None:
+        plot_df = plot_df[plot_df[data_point_id].isin(highlight_group)]
 
     if sort_by is not None and sort_by in df.columns:
         plot_df = plot_df.assign(_sort=df[sort_by]).sort_values('_sort', ascending=sort_ascending).drop(columns='_sort')
