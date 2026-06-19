@@ -5,6 +5,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.2] – 2026-06-19
+
+### Changed
+- Updated README: contact email, example snippets for `narrative_ranking_plot` and `table_grid`, example images, file structure.
+- Added GitHub Actions workflow for automatic PyPI publishing on version tag push.
+
+---
+
 ## [1.2.1] – 2026-06-19
 
 ### Changed
