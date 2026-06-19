@@ -351,4 +351,4 @@ fig.savefig('table_grid_example.png', format='png', dpi=300)
 
 # Contact
 If you encounter any issues, have suggestions, or would like to know more about the SkillCornerviz Library,
-please contact us at through this email: liam.bailey@skillcorner.com
+please contact us at through this email: contact@skillcorner.com
