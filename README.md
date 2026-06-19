@@ -270,26 +270,28 @@ data = client.get_in_possession_off_ball_runs(params={'competition': 4,
 df = pd.DataFrame(data)
 
 QUESTIONS = {
-    'Off-Ball Runs': [
+    'HOW DIRECT IS THE PLAYER ?': [
         'count_runs_in_behind_per_30_min_tip',
         'count_runs_ahead_of_the_ball_per_30_min_tip',
-        'count_overlap_runs_per_30_min_tip',
-        'count_underlap_runs_per_30_min_tip',
-        'count_support_runs_per_30_min_tip',
-        'count_coming_short_runs_per_30_min_tip',
+        'count_cross_receiver_runs_per_30_min_tip',
+    ],
+    'DOES THE PLAYER HELP BUILD UP?': [
+        'count_dropping_off_runs_per_30_min_tip',
+        'count_pulling_wide_runs_per_30_min_tip',
+        'count_pulling_half_space_runs_per_30_min_tip',
     ]
 }
-
-wide_attackers = [35342, 9106, 7619]
 
 fig, ax = rank.plot_ranking(
     df=df[df['group'] == 'Wide Attacker'],
     questions=QUESTIONS,
-    highlight_group=wide_attackers,
+    highlight_group=[35342, 9106, 7619, 13975, 246, 11550, 6140, 640, 9338],
     data_point_id='player_id',
     data_point_label='short_name',
     plot_title='Off-Ball Run Rankings | Wide Attackers LaLiga 2023/24',
 )
+
+fig.savefig('ranking_example.png', format='png', dpi=300)
 ```
 
 ## <u>Table Grid</u>
