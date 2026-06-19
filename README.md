@@ -293,6 +293,8 @@ fig, ax = rank.plot_ranking(
 
 fig.savefig('ranking_example.png', format='png', dpi=300)
 ```
+### Narrative Ranking Plot Figure
+![](https://github.com/SkillCorner/skillcornerviz/blob/master/example_plots/narrative_ranking_plot.png?raw=true)
 
 ## <u>Table Grid</u>
 ### Code Snippet
