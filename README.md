@@ -280,10 +280,12 @@ QUESTIONS = {
     ]
 }
 
+wide_attackers = [35342, 9106, 7619]
+
 fig, ax = rank.plot_ranking(
     df=df[df['group'] == 'Wide Attacker'],
     questions=QUESTIONS,
-    highlight_group=[35342, 9106, 7619],
+    highlight_group=wide_attackers,
     data_point_id='player_id',
     data_point_label='short_name',
     plot_title='Off-Ball Run Rankings | Wide Attackers LaLiga 2023/24',
@@ -323,7 +325,7 @@ fig, ax = tgrid.plot_table_grid(
     df=df[df['group'] == 'Midfield'],
     metrics=[f'{m}_z' for m in METRICS],
     labels=LABELS,
-    row_id_col='player_short_name',
+    row_id_col='player_id',
     sort_by='total_distance_per_90_z',
     plot_title='Physical Profile | Midfielders LaLiga 2023/24',
 )
