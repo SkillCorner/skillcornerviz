@@ -308,34 +308,41 @@ from scipy import stats
 
 client = SkillcornerClient(username='YOUR_USERNAME', password='YOUR_PASSWORD')
 
-data = client.get_physical(params={'competition': 4,
-                                   'season': 28,
-                                   'group_by': 'player,team,competition,season,group',
-                                   'possession': 'all,tip,otip',
-                                   'playing_time__gte': 60,
-                                   'count_match__gte': 8,
-                                   'data_version': '3'})
+data = client.get_in_possession_off_ball_runs(params={'competition': 4,
+                                                      'season': 28,
+                                                      'group_by': 'player,team,competition,season,group',
+                                                      'playing_time__gte': 60,
+                                                      'count_match__gte': 8,
+                                                      'average_per': '30_min_tip',
+                                                      'run_type': 'all,run_in_behind,run_ahead_of_the_ball,'
+                                                                 'support_run,pulling_wide_run,coming_short_run,'
+                                                                 'underlap_run,overlap_run,dropping_off_run,'
+                                                                 'pulling_half_space_run,cross_receiver_run'})
 df = pd.DataFrame(data)
-p_utils.add_standard_metrics(df)
 
-METRICS = ['total_distance_per_90', 'hi_distance_per_90', 'sprint_count_per_90', 'psv99']
-LABELS  = ['Total Dist P90', 'HI Dist P90', 'Sprints P90', 'PSV99']
+METRICS = ['count_runs_in_behind_per_30_min_tip',
+           'count_runs_ahead_of_the_ball_per_30_min_tip',
+           'count_cross_receiver_runs_per_30_min_tip',
+           'count_dropping_off_runs_per_30_min_tip',
+           'count_pulling_wide_runs_per_30_min_tip',
+           'count_pulling_half_space_runs_per_30_min_tip']
+LABELS  = ['IN BEHIND', 'AHEAD', 'CROSS RECEIVER', 'DROPPING OFF', 'WIDE RUN', 'HALF SPACE RUN']
 
-# Z-score each metric across the sample
+viz = df[df['group'] == 'Midfield'].copy()
 for m in METRICS:
-    df[f'{m}_z'] = stats.zscore(df[m])
-
-midfielders = [4450, 9188, 25738, 118870, 24120, 13908]
+    viz[f'{m}_z'] = stats.zscore(viz[m])
 
 fig, ax = tgrid.plot_table_grid(
-    df=df[df['group'] == 'Midfield'],
+    df=viz,
     metrics=[f'{m}_z' for m in METRICS],
     labels=LABELS,
-    data_point_id='player_id',
-    highlight_group=midfielders,
-    sort_by='total_distance_per_90_z',
-    plot_title='Physical Profile | Midfielders LaLiga 2023/24',
+    data_point_id='short_name',
+    # highlight_group=['J. Bellingham', 'O. Sancet'],
+    gap_positions=[3],
+    sort_by='count_runs_in_behind_per_30_min_tip_z',
+    plot_title='OBR Profile | Midfielders LaLiga 2023/24',
 )
+fig.savefig('table_grid_example.png', format='png', dpi=300)
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
