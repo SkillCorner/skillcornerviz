@@ -317,7 +317,7 @@ LABELS  = ['Total Dist P90', 'HI Dist P90', 'Sprints P90', 'PSV99']
 
 # Z-score each metric across the sample
 for m in METRICS:
-    df[f'{m}_z'] = stats.zscore(df[m].fillna(0))
+    df[f'{m}_z'] = stats.zscore(df[m])
 
 fig, ax = tgrid.plot_table_grid(
     df=df[df['group'] == 'Midfield'],
